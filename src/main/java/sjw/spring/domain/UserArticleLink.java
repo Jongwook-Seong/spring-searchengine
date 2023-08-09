@@ -17,8 +17,8 @@ public class UserArticleLink {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-    @ManyToOne(fetch = LAZY)
+    @OneToOne(fetch = LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "article_link_id")
     private ArticleLink articleLink;
-    private DiscScope scope;
+    private DisclosureScope scope;
 }

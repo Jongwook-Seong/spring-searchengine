@@ -1,5 +1,5 @@
 package sjw.spring.domain;
 
-public enum DiscScope {
+public enum DisclosureScope {
     PRIVATE, PUBLIC
 }

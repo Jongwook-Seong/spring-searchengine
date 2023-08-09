@@ -1,4 +1,4 @@
-package sjw.spring.web.search;
+package sjw.spring.web.searchengine;
 
 import java.io.*;
 import java.util.*;
@@ -6,12 +6,14 @@ import java.util.*;
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
 import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
+import lombok.extern.slf4j.Slf4j;
+import sjw.spring.domain.ArticleLink;
 
-public class IndexTest {
+@Slf4j
+public class Indexer {
 
-    private String docPath;
-    private List<String> docList;
-    private int numofDocs;
+    private List<ArticleLink> articleLinkList;
+    private int numofArticles;
     /** documentFrequency[term] = term_frequency **/
     private HashMap<String, Integer> documentFrequency = new HashMap<>();
     /** documentVector[docId][termId] = tfidf **/
@@ -27,34 +29,26 @@ public class IndexTest {
     /** postingFileList[sequence][docId] = tfidf **/
     private List<HashMap<Integer, Double>> postingFileList = new ArrayList<>();
 
-    public IndexTest(String docPath, List<String> docList, int numofDocs) {
-        this.docPath = docPath;
-        this.docList = docList;
-        this.numofDocs = numofDocs;
+    public Indexer(List<ArticleLink> articleLinkList, int numofArticles) {
+        this.articleLinkList = articleLinkList;
+        this.numofArticles = numofArticles;
     }
 
     private void forwardIndexing() throws IOException {
 
-        File wordsFile = new File("D:\\Spring Projects\\enginetest\\words");
+        File wordsFile = new File("D:\\Spring Projects\\spring\\words");
         wordsFile.createNewFile();
         BufferedWriter writer = new BufferedWriter(new FileWriter(wordsFile));
         int docId = 1;
 
-        for (String docName : docList) {
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(docPath + docName), "euc-kr"));
-            String text = "";
-            String content = "";
-            while ((text = reader.readLine()) != null) {
-                content += text;
-            }
-            reader.close();
+        for (ArticleLink aLink : articleLinkList) {
 
             // extract nouns
             Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
-            KomoranResult analyzeResult = komoran.analyze(content);
+            KomoranResult analyzeResult = komoran.analyze(aLink.getContent());
             List<String> nouns = analyzeResult.getNouns();
+
+            log.info("Nouns values : ", nouns);
 
             // set term list, words file and document frequency
             for (String noun : nouns) {
@@ -83,16 +77,16 @@ public class IndexTest {
         writer.flush();
         writer.close();
 
-        System.out.println("forwardIndexing() complete.");
+        log.info("forwardIndexing() complete.");
     }
 
     private void setDocumentVector() throws IOException {
 
-        File documentVectorFile = new File("D:\\Spring Projects\\enginetest\\documentvector.dat");
+        File documentVectorFile = new File("D:\\Spring Projects\\spring\\documentvector.dat");
         documentVectorFile.createNewFile();
         BufferedWriter writer = new BufferedWriter(new FileWriter(documentVectorFile));
 
-        for (int docId = 1; docId <= numofDocs; docId++) {
+        for (int docId = 1; docId <= numofArticles; docId++) {
 
             if (forwardIndexTable.get(docId).isEmpty()) {
                 writer.write("null\n");
@@ -104,7 +98,7 @@ public class IndexTest {
             // calculate tf-idf
             for (int termId = 1; termId <= termList.size(); termId++) {
                 String term = termList.get(termId - 1);
-                Double idf = Math.log((double)numofDocs / (double)documentFrequency.get(term)) / Math.log(2);
+                Double idf = Math.log((double)numofArticles / (double)documentFrequency.get(term)) / Math.log(2);
 
                 if (forwardIndexTable.get(docId).get(term) == null) continue;
                 int termFreq = forwardIndexTable.get(docId).get(term);
@@ -141,7 +135,7 @@ public class IndexTest {
         writer.flush();
         writer.close();
 
-        System.out.println("setDocumentVector() complete.");
+        log.info("setDocumentVector() complete.");
     }
 
     private void backwardIndexing() {
@@ -151,7 +145,7 @@ public class IndexTest {
             Map<Integer, Integer> invvector = new HashMap<>();
 
             // set vector (docId, tf)
-            for (int docId = 1; docId <= numofDocs; docId++) {
+            for (int docId = 1; docId <= numofArticles; docId++) {
                 Map<String, Integer> docIdMap = forwardIndexTable.get(docId);
                 if (docIdMap.containsKey(term)) {
                     int tf = docIdMap.get(term);
@@ -163,7 +157,7 @@ public class IndexTest {
             backwardIndexTable.put(term, invvector);
         }
 
-        System.out.println("backwardIndexing() complete.");
+        log.info("backwardIndexing() complete.");
     }
 
     private void setInvertedFile() throws IOException {
@@ -171,7 +165,7 @@ public class IndexTest {
         int startLoc = 0;
 
         // write term table file
-        File termtableFile = new File("D:\\Spring Projects\\enginetest\\termtable");
+        File termtableFile = new File("D:\\Spring Projects\\spring\\termtable");
         termtableFile.createNewFile();
         BufferedWriter ttwriter = new BufferedWriter(new FileWriter(termtableFile));
 
@@ -208,7 +202,7 @@ public class IndexTest {
         ttwriter.close();
 
         // write posting file
-        File postingFile = new File("D:\\Spring Projects\\enginetest\\postingfile");
+        File postingFile = new File("D:\\Spring Projects\\spring\\postingfile");
         postingFile.createNewFile();
         BufferedWriter pfwriter = new BufferedWriter(new FileWriter(postingFile));
 
@@ -223,7 +217,7 @@ public class IndexTest {
         pfwriter.flush();
         pfwriter.close();
 
-        System.out.println("setInvertedFile() complete.");
+        log.info("setInvertedFile() complete.");
     }
 
     public void Indexing() throws IOException {

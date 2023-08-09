@@ -1,11 +1,12 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
+<head th:replace="fragments/header :: header">
   <meta charset="utf-8">
   <link th:href="@{/css/bootstrap.min.css}"
         href="../css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<div th:replace="fragments/bodyHeader :: bodyHeader"/>
 <div class="container" style="max-width: 600px">
   <div class="py-5 text-center">
     <h2>홈 화면</h2>
@@ -19,13 +20,11 @@
 <!--        상품 관리-->
 <!--      </button>-->
 
-<!--      <button class="w-100 btn btn-secondary btn-lg" type="button"-->
-<!--              th:onclick="|location.href='@{/mylinks}'|">-->
-<!--        내 링크 보기-->
-<!--      </button>-->
+      <button class="w-100 btn btn-secondary btn-lg" type="button"
+              th:onclick="|location.href='@{/links}'|">내 링크</button>
 
 <!--      <button class="w-100 btn btn-secondary btn-lg" type="button"-->
-<!--              th:onclick="|location.href='@{/pocketlinks}'|">-->
+<!--              th:onclick="|location.href='@{/pocket/links}'|">-->
 <!--        내 포켓 보기-->
 <!--      </button>-->
     </div>
@@ -37,7 +36,10 @@
       </form>
     </div>
   </div>
-  <hr class="my-4">
+
+    <div th:replace="fragments/searchForm :: searchForm"/>
+    <hr class="my-4">
+    <div th:replace="fragments/footer :: footer"/>
 </div> <!-- /container -->
 </body>
 </html>

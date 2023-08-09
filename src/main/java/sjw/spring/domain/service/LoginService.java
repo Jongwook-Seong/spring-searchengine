@@ -1,4 +1,4 @@
-package sjw.spring.domain.login;
+package sjw.spring.domain.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

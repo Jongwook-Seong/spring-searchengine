@@ -1,6 +1,6 @@
 package sjw.spring.web.login;
 
-import sjw.spring.domain.login.LoginService;
+import sjw.spring.domain.service.LoginService;
 import sjw.spring.domain.user.User;
 import sjw.spring.web.SessionConst;
 import lombok.RequiredArgsConstructor;

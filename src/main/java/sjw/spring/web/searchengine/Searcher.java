@@ -1,15 +1,18 @@
-package sjw.spring.web.search;
+package sjw.spring.web.searchengine;
 
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
 import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
+import lombok.extern.slf4j.Slf4j;
+import sjw.spring.domain.ArticleLink;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class SearchTest {
+@Slf4j
+public class Searcher {
 
     private String filePath;
     /** termTable[term][startLocation] = df **/
@@ -17,7 +20,7 @@ public class SearchTest {
     /** postingFileList[sequence][docId] = tfidf **/
     private List<HashMap<Integer, Double>> postingFileList = new ArrayList<>();
 
-    public SearchTest(String filePath) {
+    public Searcher(String filePath) {
         this.filePath = filePath;
     }
 
@@ -32,7 +35,7 @@ public class SearchTest {
                             Integer.parseInt(record[record.length - 1])});
         }
 
-        System.out.println("readTermTableFile() complete.");
+        log.info("readTermTableFile() complete.");
     }
 
     private void readPostingFile() throws IOException {
@@ -50,7 +53,7 @@ public class SearchTest {
         }
 
         reader.close();
-        System.out.println("readPostingFile() complete.");
+        log.info("readPostingFile() complete.");
     }
 
     private HashMap<Integer, Double> readDocumentVector(int docId) throws IOException {
@@ -69,11 +72,11 @@ public class SearchTest {
             vectorOfDoc.put(termId, tfidf);
         }
 
-        System.out.println("readDocumentVector() complete.");
+        log.info("readDocumentVector() complete.");
         return vectorOfDoc;
     }
 
-    private QueryTermData analyzeQuery(String query, int numofDocs) {
+    private QueryTermData analyzeQuery(String query, int numofArticles) {
 
         Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
         KomoranResult analyzeResult = komoran.analyze(query);
@@ -92,7 +95,7 @@ public class SearchTest {
             double qtf = 0, idf = 0;
             if (termTable.containsKey(qterm)) {
                 int df = termTable.get(qterm)[1];
-                idf = Math.log((double) numofDocs / (double)df) / Math.log(2);
+                idf = Math.log((double) numofArticles / (double)df) / Math.log(2);
                 qtf = (double)qtermCount.get(qterm) / (double)qNounList.size();
             }
             double qtfidf = (0.5 + 0.5 * qtf) * idf;
@@ -102,7 +105,7 @@ public class SearchTest {
         QueryTermData qtermData = new QueryTermData();
         qtermData.setQterms(new ArrayList<>(qNounSet));
         qtermData.setQtermWeight(qtermWeight);
-        System.out.println("analyzeQuery() complete.");
+        log.info("analyzeQuery() complete.");
         return qtermData;
     }
 
@@ -194,20 +197,20 @@ public class SearchTest {
             }
         }
 
-        System.out.println("calcSimilarity() complete.");
+        log.info("calcSimilarity() complete.");
         return sortedSimOfDocList;
     }
 
-    private List<String> searchDocuments(QueryTermData qtermData, List<String> docNameList) throws IOException {
+    private List<ArticleLink> searchDocuments(QueryTermData qtermData, List<ArticleLink> articleLinkList) throws IOException {
 
-        List<String> sortedSearchDocNameList = new ArrayList<>();
+        List<ArticleLink> sortedSearchArticleLinkList = new ArrayList<>();
         List<Integer> sortedSimOfDocList = calcSimilarity(qtermData);
         for (Integer docId : sortedSimOfDocList) {
-            sortedSearchDocNameList.add(docNameList.get(docId - 1));
+            sortedSearchArticleLinkList.add(articleLinkList.get(docId - 1));
         }
 
-        System.out.println("searchDocuments() complete.");
-        return sortedSearchDocNameList;
+        log.info("searchDocuments() complete.");
+        return sortedSearchArticleLinkList;
     }
 
     private void readData() throws IOException {
@@ -215,10 +218,10 @@ public class SearchTest {
         readPostingFile();
     }
 
-    public List<String> Searching(String query, List<String> docNameList, int numofDocs) throws IOException {
+    public List<ArticleLink> Searching(String query, List<ArticleLink> articleLinkList, int numofArticles) throws IOException {
         readData();
-        QueryTermData qtermData = analyzeQuery(query, numofDocs);
-        List<String> searchedDocResult = searchDocuments(qtermData, docNameList);
-        return searchedDocResult;
+        QueryTermData qtermData = analyzeQuery(query, numofArticles);
+        List<ArticleLink> searchedResultList = searchDocuments(qtermData, articleLinkList);
+        return searchedResultList;
     }
 }

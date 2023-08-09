@@ -1,4 +1,4 @@
-package sjw.spring.web.search;
+package sjw.spring.web.searchengine;
 
 import java.util.ArrayList;
 import java.util.HashMap;

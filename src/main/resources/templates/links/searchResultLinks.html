@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"/>
+<body>
+<div class="container">
+    <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+
+    <div th:replace="fragments/searchForm :: searchForm"/>
+
+    <div>
+        <div th:each="i : ${#numbers.sequence(links.size() - 1, 0, -1)}" th:with="link = ${links[i]}">
+            <a th:href="@{${link.articleLink.url}}" target="_blank">
+                <div th:text="${link.articleLink.title}"></div>
+            </a>
+            <div th:text="${link.articleLink.content}"></div>
+            <div th:text="${link.articleLink.sharedDate}"></div>
+            <div th:text="${link.articleLink.viewCount}"></div>
+            <br>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"/>
+</div> <!-- /container -->
+</body>
+</html>

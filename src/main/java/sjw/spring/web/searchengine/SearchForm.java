@@ -1,4 +1,4 @@
-package sjw.spring.web.search;
+package sjw.spring.web.searchengine;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
